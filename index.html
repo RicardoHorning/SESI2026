@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapeamento Curricular</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for Diagnostic Visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            900: '#0a192f',
+                            800: '#0f2b48',
+                            700: '#002B66',
+                            600: '#1d4ed8',
+                            500: '#2563eb',
+                            400: '#3b82f6',
+                            100: '#e0f2fe',
+                            50: '#f0f9ff'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7fb;
+            color: #0f172a;
+        }
+        .uppercase-input {
+            text-transform: uppercase;
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            body {
+                background: white;
+                color: black;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <!-- HEADER (STRICTLY TITLE, NO LOGOS) -->
+    <header class="bg-navy-900 text-white shadow-md border-b border-navy-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <i data-lucide="compass" class="w-7 h-7 text-navy-400"></i>
+                <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white">Mapeamento Curricular</h1>
+            </div>
+            <div id="userHeaderInfo" class="hidden flex items-center space-x-4">
+                <span id="userBadge" class="text-xs sm:text-sm bg-navy-800 text-navy-100 border border-navy-600 px-3 py-1 rounded-full font-medium"></span>
+                <button onclick="logout()" class="text-xs sm:text-sm bg-navy-800 hover:bg-navy-700 text-slate-200 px-3 py-1.5 rounded-lg border border-navy-600 transition flex items-center space-x-1">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    <span>Sair</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- ALERT NOTIFICATION CONTAINER -->
+        <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2"></div>
+
+        <!-- ========================================== -->
+        <!-- SCREEN 1: LOGIN & CADASTRO (FIRST ACCESS) -->
+        <!-- ========================================== -->
+        <section id="authSection" class="max-w-md mx-auto my-8 sm:my-12">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+                <!-- Tabs -->
+                <div class="flex border-b border-slate-200 bg-slate-50">
+                    <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-4 text-center font-semibold text-navy-700 border-b-2 border-navy-600 bg-white transition">
+                        Entrar
+                    </button>
+                    <button id="tabRegisterBtn" onclick="switchAuthTab('register')" class="flex-1 py-4 text-center font-semibold text-slate-500 border-b-2 border-transparent hover:text-navy-600 transition">
+                        Primeiro Acesso / Cadastro
+                    </button>
+                </div>
+
+                <div class="p-6 sm:p-8">
+                    <!-- LOGIN FORM -->
+                    <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">E-mail</label>
+                            <div class="relative">
+                                <i data-lucide="mail" class="w-5 h-5 absolute left-3 top-2.5 text-slate-400"></i>
+                                <input type="email" id="loginEmail" required placeholder="seu.email@dominio.com" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-navy-500 focus:border-navy-500 outline-none text-slate-800 text-sm">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Senha</label>
+                            <div class="relative">
+                                <i data-lucide="lock" class="w-5 h-5 absolute left-3 top-2.5 text-slate-400"></i>
+                                <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-navy-500 focus:border-navy-500 outline-none text-slate-800 text-sm">
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button type="button" onclick="openForgotModal()" class="text-xs text-navy-600 hover:text-navy-800 font-medium">Esqueceu sua senha?</button>
+                        </div>
+
+                        <button type="submit" class="w-full py-3 bg-navy-700 hover:bg-navy-800 text-white rounded-xl font-semibold shadow-lg shadow-navy-700/20 transition duration-200 flex items-center justify-center space-x-2">
+                            <span>Acessar Sistema</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </form>
+
+                    <!-- REGISTER FORM -->
+                    <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+                        <!-- Role Selector -->
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">Perfil de Acesso</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label id="roleAlunoLabel" class="flex items-center justify-center p-3 rounded-xl border-2 border-navy-600 bg-navy-50 text-navy-800 cursor-pointer font-medium text-sm transition">
+                                    <input type="radio" name="regRole" value="aluno" checked onchange="toggleRegRole('aluno')" class="sr-only">
+                                    <i data-lucide="user" class="w-4 h-4 mr-2"></i> Aluno
+                                </label>
+                                <label id="roleProfLabel" class="flex items-center justify-center p-3 rounded-xl border-2 border-slate-200 text-slate-600 cursor-pointer font-medium text-sm transition">
+                                    <input type="radio" name="regRole" value="professor" onchange="toggleRegRole('professor')" class="sr-only">
+                                    <i data-lucide="graduation-cap" class="w-4 h-4 mr-2"></i> Professor
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Nome Completo (Upper for Aluno) -->
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Nome Completo</label>
+                            <input type="text" id="regName" required placeholder="Digite seu nome completo" oninput="handleNameInput(this)" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-navy-500 focus:border-navy-500 outline-none text-slate-800 text-sm">
+                        </div>
+
+                        <!-- Email -->
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">E-mail</label>
+                            <input type="email" id="regEmail" required placeholder="seu.email@dominio.com" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-navy-500 focus:border-navy-500 outline-none text-slate-800 text-sm">
+                        </div>
+
+                        <!-- Conditional: Matrícula (Professor) -->
+                        <div id="profMatriculaField" class="hidden">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Matrícula (Número)</label>
+                            <input type="number" id="regMatricula" placeholder="Ex: 987654" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-navy-500 focus:border-navy-500 outline-none text-slate-800 text-sm">
+                        </div>
+
+                        <!-- Conditional: Turma Selection (Aluno) -->
+                        <div id="alunoTurmaField">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Escolha sua Turma</label>
+                            <select id="regTurmaSelect" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-navy-500 focus:border-navy-500 outline-none text-slate-800 text-sm bg-white">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+
+                        <!-- Senha -->
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Senha de Acesso</label>
+                            <input type="password" id="regPassword" required placeholder="Crie uma senha" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-navy-500 focus:border-navy-500 outline-none text-slate-800 text-sm">
+                        </div>
+
+                        <button type="submit" class="w-full py-3 bg-navy-700 hover:bg-navy-800 text-white rounded-xl font-semibold shadow-lg shadow-navy-700/20 transition duration-200">
+                            Concluir Cadastro
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- MÓDULO PROFESSOR                           -->
+        <!-- ========================================== -->
+        <section id="profDashboard" class="hidden space-y-6">
+            <!-- Prof Nav Tabs -->
+            <div class="flex flex-wrap border-b border-slate-200 gap-2 bg-white p-2 rounded-xl shadow-sm">
+                <button id="pTabTurmas" onclick="switchProfTab('turmas')" class="px-4 py-2.5 rounded-lg font-medium text-sm text-navy-800 bg-navy-100 flex items-center space-x-2 transition">
+                    <i data-lucide="book-open" class="w-4 h-4"></i>
+                    <span>Cadastro de Turmas</span>
+                </button>
+                <button id="pTabGrupos" onclick="switchProfTab('grupos')" class="px-4 py-2.5 rounded-lg font-medium text-sm text-slate-600 hover:text-navy-700 hover:bg-slate-100 flex items-center space-x-2 transition">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    <span>Visualização de Grupos</span>
+                </button>
+                <button id="pTabRelatorio" onclick="switchProfTab('relatorio')" class="px-4 py-2.5 rounded-lg font-medium text-sm text-slate-600 hover:text-navy-700 hover:bg-slate-100 flex items-center space-x-2 transition">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                    <span>Relatório Diagnóstico</span>
+                </button>
+            </div>
+
+            <!-- PROF SUB-VIEW 1: CADASTRO DE TURMAS -->
+            <div id="profTurmasView" class="space-y-6">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-bold text-navy-900 mb-4 flex items-center">
+                        <i data-lucide="plus-circle" class="w-5 h-5 mr-2 text-navy-600"></i>
+                        Cadastrar Nova Turma
+                    </h2>
+                    <form onsubmit="handleCreateTurma(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Código da Turma</label>
+                            <input type="text" id="turmaCode" required placeholder="Ex: TGDQ - APB - T3 A" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-navy-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Área do Curso</label>
+                            <select id="turmaArea" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-navy-500 outline-none bg-white">
+                                <option value="">Selecione a área...</option>
+                                <option value="Desenvolvimento de Sistemas">Desenvolvimento de Sistemas</option>
+                                <option value="Mecatrônica">Mecatrônica</option>
+                                <option value="Automação Industrial">Automação Industrial</option>
+                                <option value="Eletrotécnica">Eletrotécnica</option>
+                                <option value="Manutenção Automotiva">Manutenção Automotiva</option>
+                                <option value="Gestão e Logística">Gestão e Logística</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Ano / Série</label>
+                            <select id="turmaYear" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-navy-500 outline-none bg-white">
+                                <option value="1º Ano">1º Ano</option>
+                                <option value="2º Ano">2º Ano</option>
+                                <option value="3º Ano">3º Ano</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Turno</label>
+                            <select id="turmaTurno" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-navy-500 outline-none bg-white">
+                                <option value="Manhã">Manhã</option>
+                                <option value="Tarde">Tarde</option>
+                                <option value="Noite">Noite</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Total Previsto de Alunos</label>
+                            <input type="number" id="turmaTotal" required min="1" placeholder="Ex: 35" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-navy-500 outline-none">
+                        </div>
+                        <div class="md:col-span-2 lg:col-span-1 flex items-end">
+                            <button type="submit" class="w-full py-2.5 bg-navy-700 hover:bg-navy-800 text-white rounded-xl font-semibold transition text-sm flex items-center justify-center space-x-2">
+                                <i data-lucide="check" class="w-4 h-4"></i>
+                                <span>Salvar Turma</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- LIST OF PROFESSOR'S TURMAS -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                    <h3 class="text-md font-bold text-navy-900 mb-4 flex items-center">
+                        <i data-lucide="list" class="w-5 h-5 mr-2 text-navy-600"></i>
+                        Turmas Cadastradas
+                    </h3>
+                    <div id="profTurmasList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROF SUB-VIEW 2: VISUALIZAÇÃO DE GRUPOS -->
+            <div id="profGruposView" class="hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
+                    <div>
+                        <h2 class="text-lg font-bold text-navy-900">Grupos Mapeados por Turma</h2>
+                        <p class="text-xs text-slate-500">Acompanhe os grupos formados e o nível do conteúdo de domínio.</p>
+                    </div>
+                    <div class="w-full sm:w-auto">
+                        <select id="filterTurmaGrupos" onchange="renderProfGrupos()" class="w-full sm:w-64 px-3.5 py-2 rounded-xl border border-slate-300 text-sm font-medium bg-white text-slate-700">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <div id="profGruposGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Rendered via JS -->
+                </div>
+            </div>
+
+            <!-- PROF SUB-VIEW 3: MÓDULO RELATÓRIO DIAGNÓSTICO -->
+            <div id="profRelatorioView" class="hidden space-y-6">
+                <!-- Header Control bar -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-navy-100 text-navy-700 rounded-lg">
+                            <i data-lucide="file-text" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-navy-900">Relatório Diagnóstico da Turma</h2>
+                            <p class="text-xs text-slate-500">Análise agregada de conteúdos e índice de aprendizado.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                        <!-- Turma Filter -->
+                        <select id="relatorioTurmaSelect" onchange="renderProfRelatorio()" class="px-3.5 py-2 rounded-xl border border-slate-300 text-sm font-medium bg-white text-slate-700 flex-grow md:flex-grow-0">
+                            <!-- Options populated via JS -->
+                        </select>
+
+                        <!-- View Toggle: Sintética vs Isolada -->
+                        <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+                            <button id="btnVisaoSintetica" onclick="toggleReportView('sintetica')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-navy-800 shadow-sm">
+                                Visão Sintética (Turma)
+                            </button>
+                            <button id="btnVisaoIsolada" onclick="toggleReportView('isolada')" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-navy-800">
+                                Visão Isolada (Por Grupo)
+                            </button>
+                        </div>
+
+                        <!-- Print Button -->
+                        <button onclick="window.print()" class="no-print p-2 bg-navy-800 hover:bg-navy-900 text-white rounded-xl transition text-xs font-medium flex items-center space-x-1">
+                            <i data-lucide="printer" class="w-4 h-4"></i>
+                            <span>Imprimir</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- VIEW A: SINTÉTICA (POR TURMA) -->
+                <div id="reportSinteticContainer" class="space-y-6">
+                    <!-- Key Metric Cards -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                            <span class="text-xs font-semibold text-slate-500 uppercase">Grupos Cadastrados</span>
+                            <div id="statTotalGrupos" class="text-2xl font-bold text-navy-900 mt-1">0</div>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                            <span class="text-xs font-semibold text-slate-500 uppercase">Alunos Envolvidos</span>
+                            <div id="statTotalAlunos" class="text-2xl font-bold text-navy-900 mt-1">0</div>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                            <span class="text-xs font-semibold text-slate-500 uppercase">Média Diagnóstico</span>
+                            <div id="statMediaQuiz" class="text-2xl font-bold text-navy-600 mt-1">0%</div>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                            <span class="text-xs font-semibold text-slate-500 uppercase">Temas Mapeados</span>
+                            <div id="statTotalTemas" class="text-2xl font-bold text-navy-900 mt-1">0</div>
+                        </div>
+                    </div>
+
+                    <!-- Synthetic Charts & Details -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Chart: Self-Declared Mastery breakdown -->
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-sm font-bold text-navy-900 uppercase tracking-wider mb-2">Distribuição de Domínio Autodeclarado</h3>
+                                <p class="text-xs text-slate-500 mb-4">Nível de domínio percebido pelos alunos sobre os temas trabalhados.</p>
+                            </div>
+                            <div class="relative h-64 w-full flex items-center justify-center">
+                                <canvas id="chartDominios"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Top Mastery vs Difficulty topics -->
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                            <h3 class="text-sm font-bold text-navy-900 uppercase tracking-wider">Mapeamento de Tópicos Relevantes</h3>
+                            
+                            <div>
+                                <h4 class="text-xs font-bold text-emerald-700 uppercase mb-2 flex items-center">
+                                    <i data-lucide="trending-up" class="w-4 h-4 mr-1"></i> Maior Domínio na Turma
+                                </h4>
+                                <ul id="listTopDominio" class="space-y-1 text-xs text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                    <!-- Rendered JS -->
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 class="text-xs font-bold text-amber-700 uppercase mb-2 flex items-center">
+                                    <i data-lucide="alert-circle" class="w-4 h-4 mr-1"></i> Maior Dificuldade / Domínio Baixo
+                                </h4>
+                                <ul id="listLowDominio" class="space-y-1 text-xs text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                    <!-- Rendered JS -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden Gap Analysis -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="search" class="w-5 h-5 text-navy-600"></i>
+                            <h3 class="text-md font-bold text-navy-900">Análise de Lacunas Ocultas (Gap de Aprendizado)</h3>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Comparação entre a percepção de domínio autodeclarada pelos grupos e o resultado obtido na avaliação diagnóstica objetiva.
+                        </p>
+                        <div id="gapAnalysisContent" class="p-4 bg-navy-50 rounded-xl border border-navy-100 text-xs text-navy-900 leading-relaxed">
+                            <!-- Rendered JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW B: ISOLADA (POR GRUPO) -->
+                <div id="reportIsoladaContainer" class="hidden space-y-6">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 flex items-center space-x-4">
+                        <label class="text-xs font-semibold text-slate-600 uppercase">Selecione o Grupo:</label>
+                        <select id="selectGrupoIsolado" onchange="renderGrupoIsoladoDetail()" class="px-3.5 py-2 rounded-xl border border-slate-300 text-sm font-medium bg-white text-slate-800 flex-grow max-w-xs">
+                            <!-- JS Populated -->
+                        </select>
+                    </div>
+
+                    <div id="grupoIsoladoDetail" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                        <!-- Detail content rendered via JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- MÓDULO ALUNO                               -->
+        <!-- ========================================== -->
+        <section id="alunoDashboard" class="hidden space-y-6">
+            <!-- Student Header Banner -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <span class="text-xs font-semibold text-navy-600 uppercase tracking-wider">Módulo do Estudante</span>
+                    <h2 id="alunoWelcomeName" class="text-xl font-bold text-navy-900 mt-0.5"></h2>
+                    <p id="alunoTurmaInfo" class="text-xs text-slate-500 mt-1"></p>
+                </div>
+                <div id="alunoStatusBadge" class="bg-navy-50 border border-navy-200 px-4 py-2 rounded-xl text-xs text-navy-800 font-medium">
+                    Status: <span class="font-bold text-navy-900">Em preenchimento</span>
+                </div>
+            </div>
+
+            <!-- STEP WIZARD FORM -->
+            <div id="alunoFormContainer" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-8">
+                
+                <!-- STEP 1: FORMALIZAÇÃO DO GRUPO -->
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-3 border-b border-slate-100 pb-3">
+                        <span class="w-8 h-8 bg-navy-700 text-white rounded-full flex items-center justify-center font-bold text-sm">1</span>
+                        <div>
+                            <h3 class="text-md font-bold text-navy-900">Formalização do Grupo</h3>
+                            <p class="text-xs text-slate-500">Cadastre os componentes do seu grupo (de 3 a 5 integrantes). Nomes em maiúsculas.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-xl">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tamanho do Grupo</label>
+                            <select id="alunoGroupSize" onchange="adjustGroupSizeInputs()" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-navy-500 bg-white">
+                                <option value="3">Trio (3 Alunos)</option>
+                                <option value="4">Quarteto (4 Alunos)</option>
+                                <option value="5">Quinteto (5 Alunos)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Member inputs -->
+                    <div id="groupMembersInputs" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Populated JS -->
+                    </div>
+                </div>
+
+                <!-- STEP 2: TEMAS PREDEFINIDOS E DIAGNÓSTICO (QUIZ) -->
+                <div class="space-y-4 pt-4 border-t border-slate-100">
+                    <div class="flex items-center space-x-3 border-b border-slate-100 pb-3">
+                        <span class="w-8 h-8 bg-navy-700 text-white rounded-full flex items-center justify-center font-bold text-sm">2</span>
+                        <div>
+                            <h3 class="text-md font-bold text-navy-900">Avaliação Diagnóstica de Temas Predefinidos</h3>
+                            <p class="text-xs text-slate-500">Responda às questões técnicas do seu ano e área do curso para avaliar o domínio do grupo.</p>
+                        </div>
+                    </div>
+
+                    <div id="quizQuestionsContainer" class="space-y-6">
+                        <!-- Populated dynamically according to Turma Year and Area -->
+                    </div>
+                </div>
+
+                <!-- STEP 3: TEMAS TRABALHADOS EM SALA DE AULA (MANUAL) -->
+                <div class="space-y-4 pt-4 border-t border-slate-100">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 bg-navy-700 text-white rounded-full flex items-center justify-center font-bold text-sm">3</span>
+                            <div>
+                                <h3 class="text-md font-bold text-navy-900">Cadastrar Temas Trabalhados em Sala</h3>
+                                <p class="text-xs text-slate-500">Informe os tópicos vistos em aula desde fevereiro e indique a percepção do grupo.</p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="addCustomTopicRow()" class="px-3 py-1.5 bg-navy-100 hover:bg-navy-200 text-navy-800 rounded-xl text-xs font-semibold flex items-center space-x-1 transition">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Adicionar Tema</span>
+                        </button>
+                    </div>
+
+                    <div id="customTopicsContainer" class="space-y-3">
+                        <!-- Custom topic items generated JS -->
+                    </div>
+                </div>
+
+                <!-- STEP 4: ENVIAR PARA O PROFESSOR -->
+                <div class="pt-6 border-t border-slate-200 flex justify-end">
+                    <button type="button" onclick="submitAlunoGroupForm()" class="px-8 py-3 bg-navy-700 hover:bg-navy-800 text-white font-bold rounded-xl shadow-lg shadow-navy-700/20 transition flex items-center space-x-2">
+                        <i data-lucide="send" class="w-5 h-5"></i>
+                        <span>Enviar Relatório ao Professor</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 no-print">
+        <p>Mapeamento Curricular - Diagnóstico e Acompanhamento do Aprendizado</p>
+    </footer>
+
+    <!-- MODAL FORGOT PASSWORD -->
+    <div id="forgotModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <h3 class="text-lg font-bold text-navy-900">Recuperação de Senha</h3>
+            <p class="text-xs text-slate-600">Digite seu e-mail cadastrado para receber as instruções de redefinição.</p>
+            <input type="email" id="forgotEmail" placeholder="seu.email@dominio.com" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-navy-500 outline-none">
+            <div class="flex justify-end space-x-2 pt-2">
+                <button type="button" onclick="closeForgotModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800">Cancelar</button>
+                <button type="button" onclick="handleSendForgot()" class="px-4 py-2 bg-navy-700 text-white rounded-xl text-xs font-semibold">Enviar Recuperação</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // GLOBAL STATE STORE (PERSISTED IN LOCALSTORAGE)
+        let state = {
+            users: [],       // Registered users
+            turmas: [],      // Classes created by professors
+            grupos: [],      // Mapped groups submitted by students
+            currentUser: null
+        };
+
+        let currentProfTab = 'turmas';
+        let currentReportView = 'sintetica';
+        let chartInstance = null;
+
+        // INITIALIZATION
+        window.onload = function() {
+            loadState();
+            lucide.createIcons();
+            checkSession();
+        };
+
+        function loadState() {
+            const savedUsers = localStorage.getItem('mc_users');
+            const savedTurmas = localStorage.getItem('mc_turmas');
+            const savedGrupos = localStorage.getItem('mc_grupos');
+            const savedUser = localStorage.getItem('mc_currentUser');
+
+            if (savedUsers) state.users = JSON.parse(savedUsers);
+            if (savedTurmas) state.turmas = JSON.parse(savedTurmas);
+            if (savedGrupos) state.grupos = JSON.parse(savedGrupos);
+            if (savedUser) state.currentUser = JSON.parse(savedUser);
+        }
+
+        function saveState() {
+            localStorage.setItem('mc_users', JSON.stringify(state.users));
+            localStorage.setItem('mc_turmas', JSON.stringify(state.turmas));
+            localStorage.setItem('mc_grupos', JSON.stringify(state.grupos));
+            if (state.currentUser) {
+                localStorage.setItem('mc_currentUser', JSON.stringify(state.currentUser));
+            } else {
+                localStorage.removeItem('mc_currentUser');
+            }
+        }
+
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `p-3 rounded-xl shadow-lg text-xs font-medium text-white transition-all transform duration-300 ${
+                type === 'error' ? 'bg-slate-800 border-l-4 border-slate-600' : 'bg-navy-800 border-l-4 border-navy-400'
+            }`;
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 3500);
+        }
+
+        // AUTH & ROUTING LOGIC
+        function checkSession() {
+            const authSection = document.getElementById('authSection');
+            const profDashboard = document.getElementById('profDashboard');
+            const alunoDashboard = document.getElementById('alunoDashboard');
+            const userHeaderInfo = document.getElementById('userHeaderInfo');
+            const userBadge = document.getElementById('userBadge');
+
+            if (!state.currentUser) {
+                authSection.classList.remove('hidden');
+                profDashboard.classList.add('hidden');
+                alunoDashboard.classList.add('hidden');
+                userHeaderInfo.classList.add('hidden');
+                populateTurmaDropdown();
+                return;
+            }
+
+            authSection.classList.add('hidden');
+            userHeaderInfo.classList.remove('hidden');
+
+            if (state.currentUser.role === 'professor') {
+                userBadge.innerText = `Prof. ${state.currentUser.name} (Mat: ${state.currentUser.matricula})`;
+                profDashboard.classList.remove('hidden');
+                alunoDashboard.classList.add('hidden');
+                renderProfTurmas();
+                renderProfGruposOptions();
+                renderProfRelatorioOptions();
+            } else {
+                const turmaObj = state.turmas.find(t => t.id === state.currentUser.turmaId);
+                const turmaName = turmaObj ? turmaObj.code : 'Turma Não Identificada';
+                userBadge.innerText = `Aluno: ${state.currentUser.name} | ${turmaName}`;
+                profDashboard.classList.add('hidden');
+                alunoDashboard.classList.remove('hidden');
+                setupAlunoDashboard(turmaObj);
+            }
+            lucide.createIcons();
+        }
+
+        function switchAuthTab(tab) {
+            const tabLoginBtn = document.getElementById('tabLoginBtn');
+            const tabRegisterBtn = document.getElementById('tabRegisterBtn');
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+
+            if (tab === 'login') {
+                tabLoginBtn.className = "flex-1 py-4 text-center font-semibold text-navy-700 border-b-2 border-navy-600 bg-white transition";
+                tabRegisterBtn.className = "flex-1 py-4 text-center font-semibold text-slate-500 border-b-2 border-transparent hover:text-navy-600 transition";
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+            } else {
+                tabRegisterBtn.className = "flex-1 py-4 text-center font-semibold text-navy-700 border-b-2 border-navy-600 bg-white transition";
+                tabLoginBtn.className = "flex-1 py-4 text-center font-semibold text-slate-500 border-b-2 border-transparent hover:text-navy-600 transition";
+                registerForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+                populateTurmaDropdown();
+            }
+        }
+
+        function toggleRegRole(role) {
+            const profField = document.getElementById('profMatriculaField');
+            const alunoField = document.getElementById('alunoTurmaField');
+            const roleAlunoLabel = document.getElementById('roleAlunoLabel');
+            const roleProfLabel = document.getElementById('roleProfLabel');
+
+            if (role === 'professor') {
+                profField.classList.remove('hidden');
+                alunoField.classList.add('hidden');
+                roleProfLabel.className = "flex items-center justify-center p-3 rounded-xl border-2 border-navy-600 bg-navy-50 text-navy-800 cursor-pointer font-medium text-sm transition";
+                roleAlunoLabel.className = "flex items-center justify-center p-3 rounded-xl border-2 border-slate-200 text-slate-600 cursor-pointer font-medium text-sm transition";
+            } else {
+                profField.classList.add('hidden');
+                alunoField.classList.remove('hidden');
+                roleAlunoLabel.className = "flex items-center justify-center p-3 rounded-xl border-2 border-navy-600 bg-navy-50 text-navy-800 cursor-pointer font-medium text-sm transition";
+                roleProfLabel.className = "flex items-center justify-center p-3 rounded-xl border-2 border-slate-200 text-slate-600 cursor-pointer font-medium text-sm transition";
+                populateTurmaDropdown();
+            }
+        }
+
+        function handleNameInput(inputElem) {
+            const role = document.querySelector('input[name="regRole"]:checked').value;
+            if (role === 'aluno') {
+                inputElem.value = inputElem.value.toUpperCase();
+            }
+        }
+
+        function populateTurmaDropdown() {
+            const select = document.getElementById('regTurmaSelect');
+            select.innerHTML = '';
+
+            if (state.turmas.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = "";
+                opt.innerText = "Nenhuma turma cadastrada. Aguarde seu professor cadastrar a turma.";
+                select.appendChild(opt);
+                select.disabled = true;
+            } else {
+                select.disabled = false;
+                state.turmas.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t.id;
+                    opt.innerText = `${t.code} (${t.area} - ${t.year})`;
+                    select.appendChild(opt);
+                });
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const pass = document.getElementById('loginPassword').value;
+
+            const user = state.users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === pass);
+            if (user) {
+                state.currentUser = user;
+                saveState();
+                showToast(`Bem-vindo, ${user.name}!`);
+                checkSession();
+            } else {
+                showToast("E-mail ou senha inválidos.", "error");
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const role = document.querySelector('input[name="regRole"]:checked').value;
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const pass = document.getElementById('regPassword').value;
+
+            if (state.users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+                showToast("Este e-mail já está cadastrado.", "error");
+                return;
+            }
+
+            let newUser = {
+                id: 'usr_' + Date.now(),
+                role,
+                name: role === 'aluno' ? name.toUpperCase() : name,
+                email,
+                password: pass
+            };
+
+            if (role === 'professor') {
+                const matricula = document.getElementById('regMatricula').value;
+                if (!matricula) {
+                    showToast("Por favor insira o número da matrícula.", "error");
+                    return;
+                }
+                newUser.matricula = matricula;
+            } else {
+                const turmaId = document.getElementById('regTurmaSelect').value;
+                if (!turmaId) {
+                    showToast("Nenhuma turma cadastrada. Aguarde seu professor cadastrar a turma.", "error");
+                    return;
+                }
+                newUser.turmaId = turmaId;
+            }
+
+            state.users.push(newUser);
+            state.currentUser = newUser;
+            saveState();
+            showToast("Cadastro realizado com sucesso!");
+            checkSession();
+        }
+
+        function logout() {
+            state.currentUser = null;
+            saveState();
+            checkSession();
+        }
+
+        function openForgotModal() {
+            document.getElementById('forgotModal').classList.remove('hidden');
+        }
+
+        function closeForgotModal() {
+            document.getElementById('forgotModal').classList.add('hidden');
+        }
+
+        function handleSendForgot() {
+            const email = document.getElementById('forgotEmail').value;
+            if (email) {
+                showToast(`Instruções enviadas para ${email}`);
+                closeForgotModal();
+            }
+        }
+
+        // ==========================================
+        // PROFESSOR LOGIC
+        // ==========================================
+        function switchProfTab(tab) {
+            currentProfTab = tab;
+            const tBtn = document.getElementById('pTabTurmas');
+            const gBtn = document.getElementById('pTabGrupos');
+            const rBtn = document.getElementById('pTabRelatorio');
+
+            const tView = document.getElementById('profTurmasView');
+            const gView = document.getElementById('profGruposView');
+            const rView = document.getElementById('profRelatorioView');
+
+            [tBtn, gBtn, rBtn].forEach(b => b.className = "px-4 py-2.5 rounded-lg font-medium text-sm text-slate-600 hover:text-navy-700 hover:bg-slate-100 flex items-center space-x-2 transition");
+            [tView, gView, rView].forEach(v => v.classList.add('hidden'));
+
+            if (tab === 'turmas') {
+                tBtn.className = "px-4 py-2.5 rounded-lg font-medium text-sm text-navy-800 bg-navy-100 flex items-center space-x-2 transition";
+                tView.classList.remove('hidden');
+                renderProfTurmas();
+            } else if (tab === 'grupos') {
+                gBtn.className = "px-4 py-2.5 rounded-lg font-medium text-sm text-navy-800 bg-navy-100 flex items-center space-x-2 transition";
+                gView.classList.remove('hidden');
+                renderProfGruposOptions();
+                renderProfGrupos();
+            } else if (tab === 'relatorio') {
+                rBtn.className = "px-4 py-2.5 rounded-lg font-medium text-sm text-navy-800 bg-navy-100 flex items-center space-x-2 transition";
+                rView.classList.remove('hidden');
+                renderProfRelatorioOptions();
+                renderProfRelatorio();
+            }
+            lucide.createIcons();
+        }
+
+        function handleCreateTurma(e) {
+            e.preventDefault();
+            const code = document.getElementById('turmaCode').value.trim();
+            const area = document.getElementById('turmaArea').value;
+            const year = document.getElementById('turmaYear').value;
+            const turno = document.getElementById('turmaTurno').value;
+            const total = parseInt(document.getElementById('turmaTotal').value, 10);
+
+            const newTurma = {
+                id: 'trm_' + Date.now(),
+                code,
+                area,
+                year,
+                turno,
+                totalStudents: total,
+                professorId: state.currentUser.id,
+                createdAt: new Date().toLocaleDateString('pt-BR')
+            };
+
+            state.turmas.push(newTurma);
+            saveState();
+            showToast("Turma cadastrada com sucesso!");
+            e.target.reset();
+            renderProfTurmas();
+        }
+
+        function renderProfTurmas() {
+            const container = document.getElementById('profTurmasList');
+            container.innerHTML = '';
+
+            const myTurmas = state.turmas.filter(t => t.professorId === state.currentUser.id);
+
+            if (myTurmas.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-8 text-center text-slate-400 text-xs">
+                        Nenhuma turma cadastrada até o momento.
+                    </div>
+                `;
+                return;
+            }
+
+            myTurmas.forEach(t => {
+                const countGrupos = state.grupos.filter(g => g.turmaId === t.id).length;
+                const card = document.createElement('div');
+                card.className = "p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between space-y-3";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-bold bg-navy-100 text-navy-800 px-2.5 py-0.5 rounded-md">${t.year}</span>
+                            <span class="text-xs text-slate-400">${t.turno}</span>
+                        </div>
+                        <h4 class="text-base font-bold text-navy-900 mt-2">${t.code}</h4>
+                        <p class="text-xs text-slate-600 mt-0.5">${t.area}</p>
+                    </div>
+                    <div class="pt-2 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500">
+                        <span>Alunos previstos: <b>${t.totalStudents}</b></span>
+                        <span>Grupos mapeados: <b>${countGrupos}</b></span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderProfGruposOptions() {
+            const select = document.getElementById('filterTurmaGrupos');
+            select.innerHTML = '';
+            const myTurmas = state.turmas.filter(t => t.professorId === state.currentUser.id);
+
+            if (myTurmas.length === 0) {
+                select.innerHTML = '<option value="">Sem turmas disponíveis</option>';
+                return;
+            }
+
+            myTurmas.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.innerText = `${t.code} (${t.area})`;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderProfGrupos() {
+            const turmaId = document.getElementById('filterTurmaGrupos').value;
+            const container = document.getElementById('profGruposGrid');
+            container.innerHTML = '';
+
+            const filteredGrupos = state.grupos.filter(g => g.turmaId === turmaId);
+
+            if (filteredGrupos.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-12 text-center text-slate-400 text-xs">
+                        Nenhum grupo formalizou resposta nesta turma ainda.
+                    </div>
+                `;
+                return;
+            }
+
+            filteredGrupos.forEach((g, idx) => {
+                const badgeSize = g.groupSize === 3 ? 'Trio' : g.groupSize === 4 ? 'Quarteto' : 'Quinteto';
+                const membersListHTML = g.memberNames.map(m => `<li class="font-semibold text-slate-800 uppercase">• ${m}</li>`).join('');
+
+                const topicsHTML = g.customTopics.map(tp => {
+                    let badgeClass = "bg-slate-200 text-slate-700";
+                    if (tp.level === 'Alto') badgeClass = "bg-emerald-100 text-emerald-800 border border-emerald-200";
+                    if (tp.level === 'Médio') badgeClass = "bg-amber-100 text-amber-800 border border-amber-200";
+                    if (tp.level === 'Baixo') badgeClass = "bg-slate-200 text-slate-800 border border-slate-300";
+                    return `<span class="inline-block px-2 py-0.5 rounded text-xs font-medium ${badgeClass} mr-1 mb-1">${tp.topic} (${tp.level})</span>`;
+                }).join('');
+
+                const card = document.createElement('div');
+                card.className = "p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4 flex flex-col justify-between";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                            <h4 class="font-bold text-navy-900 text-sm">Grupo #${idx + 1}</h4>
+                            <span class="text-xs bg-navy-100 text-navy-800 font-bold px-2.5 py-0.5 rounded-full">${badgeSize}</span>
+                        </div>
+                        <div class="mt-3">
+                            <label class="text-xs text-slate-400 font-semibold uppercase">Integrantes:</label>
+                            <ul class="text-xs space-y-0.5 mt-1">
+                                ${membersListHTML}
+                            </ul>
+                        </div>
+                        <div class="mt-3">
+                            <label class="text-xs text-slate-400 font-semibold uppercase block mb-1">Temas Declarados:</label>
+                            <div class="flex flex-wrap">
+                                ${topicsHTML || '<span class="text-xs text-slate-400">Nenhum tema adicional.</span>'}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
+                        <span class="text-slate-500">Nota Diagnóstica:</span>
+                        <span class="font-bold text-navy-700 bg-navy-50 px-2.5 py-1 rounded-lg border border-navy-100">${g.scorePercentage}% Acertos</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderProfRelatorioOptions() {
+            const select = document.getElementById('relatorioTurmaSelect');
+            select.innerHTML = '';
+            const myTurmas = state.turmas.filter(t => t.professorId === state.currentUser.id);
+
+            if (myTurmas.length === 0) {
+                select.innerHTML = '<option value="">Sem turmas para relatório</option>';
+                return;
+            }
+
+            myTurmas.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.innerText = `Turma: ${t.code}`;
+                select.appendChild(opt);
+            });
+        }
+
+        function toggleReportView(view) {
+            currentReportView = view;
+            const btnS = document.getElementById('btnVisaoSintetica');
+            const btnI = document.getElementById('btnVisaoIsolada');
+            const contS = document.getElementById('reportSinteticContainer');
+            const contI = document.getElementById('reportIsoladaContainer');
+
+            if (view === 'sintetica') {
+                btnS.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-navy-800 shadow-sm";
+                btnI.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-navy-800";
+                contS.classList.remove('hidden');
+                contI.classList.add('hidden');
+            } else {
+                btnI.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-navy-800 shadow-sm";
+                btnS.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-navy-800";
+                contI.classList.remove('hidden');
+                contS.classList.add('hidden');
+            }
+            renderProfRelatorio();
+        }
+
+        function renderProfRelatorio() {
+            const turmaId = document.getElementById('relatorioTurmaSelect').value;
+            const gruposTurma = state.grupos.filter(g => g.turmaId === turmaId);
+
+            if (currentReportView === 'sintetica') {
+                // Sintética Calculations
+                const totalGrupos = gruposTurma.length;
+                let totalAlunos = 0;
+                let sumScores = 0;
+                let topicCounts = { 'Alto': 0, 'Médio': 0, 'Baixo': 0 };
+                let topicMap = {};
+
+                gruposTurma.forEach(g => {
+                    totalAlunos += g.memberNames.length;
+                    sumScores += g.scorePercentage;
+                    g.customTopics.forEach(tp => {
+                        if (topicCounts[tp.level] !== undefined) topicCounts[tp.level]++;
+                        if (!topicMap[tp.topic]) topicMap[tp.topic] = { Alto: 0, Médio: 0, Baixo: 0 };
+                        topicMap[tp.topic][tp.level]++;
+                    });
+                });
+
+                const mediaQuiz = totalGrupos > 0 ? Math.round(sumScores / totalGrupos) : 0;
+                const totalTemas = Object.keys(topicMap).length;
+
+                document.getElementById('statTotalGrupos').innerText = totalGrupos;
+                document.getElementById('statTotalAlunos').innerText = totalAlunos;
+                document.getElementById('statMediaQuiz').innerText = mediaQuiz + '%';
+                document.getElementById('statTotalTemas').innerText = totalTemas;
+
+                // High mastery vs Low mastery lists
+                const listTop = document.getElementById('listTopDominio');
+                const listLow = document.getElementById('listLowDominio');
+                listTop.innerHTML = '';
+                listLow.innerHTML = '';
+
+                let sortedHigh = Object.keys(topicMap).sort((a,b) => topicMap[b].Alto - topicMap[a].Alto);
+                let sortedLow = Object.keys(topicMap).sort((a,b) => topicMap[b].Baixo - topicMap[a].Baixo);
+
+                if (sortedHigh.length === 0 || topicCounts.Alto === 0) {
+                    listTop.innerHTML = '<li>Nenhum tema indicado com Domínio Alto.</li>';
+                } else {
+                    sortedHigh.slice(0, 3).forEach(t => {
+                        listTop.innerHTML += `<li class="flex justify-between"><span>${t}</span><b class="text-emerald-700">${topicMap[t].Alto} grupos</b></li>`;
+                    });
+                }
+
+                if (sortedLow.length === 0 || topicCounts.Baixo === 0) {
+                    listLow.innerHTML = '<li>Nenhum tema indicado com Domínio Baixo.</li>';
+                } else {
+                    sortedLow.slice(0, 3).forEach(t => {
+                        listLow.innerHTML += `<li class="flex justify-between"><span>${t}</span><b class="text-amber-700">${topicMap[t].Baixo} grupos</b></li>`;
+                    });
+                }
+
+                // Render Chart
+                renderDominiosChart(topicCounts);
+
+                // Gap Analysis Narrative
+                const gapContainer = document.getElementById('gapAnalysisContent');
+                if (totalGrupos === 0) {
+                    gapContainer.innerHTML = 'Aguardando envio de respostas dos grupos para gerar análise de lacunas.';
+                } else {
+                    let gapText = "";
+                    if (topicCounts.Alto > topicCounts.Baixo && mediaQuiz < 60) {
+                        gapText = `<b>Atenção:</b> Os alunos apresentam uma <b>superestimação de domínio</b>. Apesar de declararem alto domínio em múltiplos conteúdos, a média do teste diagnóstico foi de apenas <b>${mediaQuiz}%</b>. Recomenda-se revisão conceitual prática dos temas básicos.`;
+                    } else if (mediaQuiz >= 80) {
+                        gapText = `<b>Excelente Desempenho:</b> A turma demonstrou consistência entre o aprendizado autodeclarado e o diagnóstico técnico objetivado (Média: <b>${mediaQuiz}%</b>). Prontos para desafios avançados.`;
+                    } else {
+                        gapText = `<b>Desempenho Moderado:</b> A turma registrou média diagnóstica de <b>${mediaQuiz}%</b>. Os conteúdos sinalizados com "Domínio Baixo" devem ser priorizados nas próximas aulas expositivas e laboratório.`;
+                    }
+                    gapContainer.innerHTML = gapText;
+                }
+
+            } else {
+                // Isolada Calculations
+                const selectIsolado = document.getElementById('selectGrupoIsolado');
+                selectIsolado.innerHTML = '';
+
+                if (gruposTurma.length === 0) {
+                    selectIsolado.innerHTML = '<option value="">Sem grupos nesta turma</option>';
+                    document.getElementById('grupoIsoladoDetail').innerHTML = '<div class="text-center text-slate-400 text-xs py-8">Nenhum grupo disponível.</div>';
+                    return;
+                }
+
+                gruposTurma.forEach((g, idx) => {
+                    const opt = document.createElement('option');
+                    opt.value = g.id;
+                    opt.innerText = `Grupo #${idx + 1} (${g.memberNames[0]}...)`;
+                    selectIsolado.appendChild(opt);
+                });
+
+                renderGrupoIsoladoDetail();
+            }
+        }
+
+        function renderDominiosChart(counts) {
+            const ctx = document.getElementById('chartDominios').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Domínio Alto', 'Domínio Médio', 'Domínio Baixo'],
+                    datasets: [{
+                        data: [counts.Alto, counts.Médio, counts.Baixo],
+                        backgroundColor: ['#059669', '#d97706', '#475569'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { family: 'Inter', size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderGrupoIsoladoDetail() {
+            const grupoId = document.getElementById('selectGrupoIsolado').value;
+            const container = document.getElementById('grupoIsoladoDetail');
+            const grupo = state.grupos.find(g => g.id === grupoId);
+
+            if (!grupo) {
+                container.innerHTML = '<p class="text-xs text-slate-400">Selecione um grupo válido.</p>';
+                return;
+            }
+
+            const membersHTML = grupo.memberNames.map(m => `<li class="font-bold text-slate-800 uppercase">• ${m}</li>`).join('');
+            const topicsHTML = grupo.customTopics.map(tp => `
+                <tr class="border-b border-slate-100">
+                    <td class="py-2 text-xs text-slate-800 font-medium">${tp.topic}</td>
+                    <td class="py-2 text-xs font-bold text-right">${tp.level}</td>
+                </tr>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="flex justify-between items-center border-b border-slate-200 pb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-navy-900">Relatório Isolado do Grupo</h3>
+                        <p class="text-xs text-slate-500">Enviado em: ${new Date(grupo.submittedAt).toLocaleDateString('pt-BR')}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400 uppercase font-semibold block">Nota Diagnóstica</span>
+                        <span class="text-xl font-bold text-navy-700">${grupo.scorePercentage}%</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-semibold text-slate-500 uppercase mb-2">Integrantes do Grupo (${grupo.groupSize})</h4>
+                    <ul class="text-xs space-y-1 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        ${membersHTML}
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-semibold text-slate-500 uppercase mb-2">Temas Autodeclarados</h4>
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b border-slate-200 text-xs text-slate-400">
+                                <th class="pb-1">Conteúdo/Tema</th>
+                                <th class="pb-1 text-right">Nível de Domínio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${topicsHTML || '<tr><td colspan="2" class="py-2 text-xs text-slate-400">Nenhum tema cadastrado.</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // ALUNO LOGIC
+        // ==========================================
+        function setupAlunoDashboard(turmaObj) {
+            document.getElementById('alunoWelcomeName').innerText = state.currentUser.name;
+            
+            if (!turmaObj) {
+                document.getElementById('alunoTurmaInfo').innerText = "Nenhuma turma associada.";
+                return;
+            }
+
+            document.getElementById('alunoTurmaInfo').innerText = `Turma: ${turmaObj.code} | Área: ${turmaObj.area} (${turmaObj.year})`;
+
+            // Check if group already submitted by this student
+            const existingGroup = state.grupos.find(g => g.turmaId === turmaObj.id && g.memberNames.includes(state.currentUser.name));
+            const badge = document.getElementById('alunoStatusBadge');
+
+            if (existingGroup) {
+                badge.innerHTML = `Status: <span class="font-bold text-emerald-700">Relatório Enviado (${existingGroup.scorePercentage}% no Diagnóstico)</span>`;
+            } else {
+                badge.innerHTML = `Status: <span class="font-bold text-amber-700">Pendente de Envio</span>`;
+            }
+
+            adjustGroupSizeInputs();
+            renderQuizQuestions(turmaObj.area, turmaObj.year);
+            renderCustomTopicRowsDefault();
+        }
+
+        function adjustGroupSizeInputs() {
+            const size = parseInt(document.getElementById('alunoGroupSize').value, 10);
+            const container = document.getElementById('groupMembersInputs');
+            container.innerHTML = '';
+
+            for (let i = 1; i <= size; i++) {
+                const div = document.createElement('div');
+                const isLeader = (i === 1);
+                const defaultValue = isLeader ? state.currentUser.name : '';
+                const readonlyAttr = isLeader ? 'readonly' : '';
+
+                div.innerHTML = `
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">
+                        Integrante ${i} ${isLeader ? '(Você)' : ''}
+                    </label>
+                    <input type="text" required placeholder="NOME COMPLETO DO ALUNO" value="${defaultValue}" ${readonlyAttr} oninput="this.value = this.value.toUpperCase()" class="group-member-input w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-navy-500 uppercase-input ${isLeader ? 'bg-slate-100 font-semibold' : 'bg-white'}">
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        // DYNAMIC QUIZ BANK BASED ON COURSE AREA & YEAR
+        function renderQuizQuestions(area, year) {
+            const container = document.getElementById('quizQuestionsContainer');
+            container.innerHTML = '';
+
+            // Generate specific questions tailored to technical course area
+            const questions = getQuestionsForCourse(area, year);
+
+            questions.forEach((q, qIndex) => {
+                const card = document.createElement('div');
+                card.className = "p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3";
+                
+                const optionsHTML = q.options.map((opt, optIndex) => `
+                    <label class="flex items-start space-x-3 p-2.5 bg-white rounded-lg border border-slate-200 hover:border-navy-400 cursor-pointer text-xs font-medium text-slate-700 transition">
+                        <input type="radio" name="quiz_q${qIndex}" value="${optIndex}" required class="mt-0.5 text-navy-600 focus:ring-navy-500">
+                        <span>${opt}</span>
+                    </label>
+                `).join('');
+
+                card.innerHTML = `
+                    <p class="text-xs sm:text-sm font-bold text-navy-900">Q${qIndex + 1}. ${q.question}</p>
+                    <div class="space-y-2">
+                        ${optionsHTML}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function getQuestionsForCourse(area, year) {
+            // General or area specific question generators
+            if (area.includes("Desenvolvimento") || area.includes("Sistemas")) {
+                return [
+                    {
+                        question: "Qual estrutura de dados utiliza a lógica LIFO (Last In, First Out)?",
+                        options: ["Fila (Queue)", "Pilha (Stack)", "Lista Encadeada", "Matriz"],
+                        correct: 1
+                    },
+                    {
+                        question: "Em Programação Orientada a Objetos, o conceito de Encapsulamento refere-se a:",
+                        options: ["Criar múltiplos métodos com o mesmo nome", "Proteger os atributos internos de uma classe através de modificadores de acesso", "Herdar métodos de uma classe pai", "Compilar o código fonte em bytecode"],
+                        correct: 1
+                    },
+                    {
+                        question: "Qual comando SQL é utilizado para atualizar dados existentes em uma tabela?",
+                        options: ["ALTER TABLE", "INSERT INTO", "UPDATE", "MODIFY"],
+                        correct: 2
+                    },
+                    {
+                        question: "O que caracteriza uma API RESTful?",
+                        options: ["Utilização estrita do protocolo FTP para arquivos", "Comunicação stateless utilizando métodos HTTP padrão (GET, POST, PUT, DELETE)", "Necessidade de banco de dados relacional pré-configurado", "Interface gráfica embutida no servidor"],
+                        correct: 1
+                    }
+                ];
+            } else if (area.includes("Mecatrônica") || area.includes("Automação")) {
+                return [
+                    {
+                        question: "Na linguagem Ladder para CLP, o que representa um contato normalmente aberto (NO)?",
+                        options: ["Um temporizador de retardo de energização", "Uma bobina de saída direta", "Um elemento de entrada que conduz corrente lógica quando acionado", "Uma interrupção por hardware"],
+                        correct: 2
+                    },
+                    {
+                        question: "Qual sensor é mais adequado para detectar objetos metálicos sem contato físico?",
+                        options: ["Sensor Óptico Reflexivo", "Sensor Indutivo", "Sensor Ultrassônico", "Sensor Capacitivo de Líquidos"],
+                        correct: 1
+                    },
+                    {
+                        question: "O controlador PID atua através de três ações. Qual é a função da ação Integral (I)?",
+                        options: ["Antecipar o erro futuro baseado na taxa de variação", "Eliminar o erro em regime permanente ao longo do tempo", "Proporcionar ganho imediato proporcional ao erro atual", "Filtrar ruídos de alta frequência"],
+                        correct: 1
+                    },
+                    {
+                        question: "Em sistemas pneumáticos, qual é a função de uma válvula alternadora (Válvula OU)?",
+                        options: ["Permitir fluxo apenas quando dois sinais de pilotagem ocorrerem simultaneamente", "Permitir o fluxo se pelo menos um dos dois sinais de entrada estiver ativo", "Reduzir a pressão do ar comprimido", "Bloquear o retorno de ar rapidamente"],
+                        correct: 1
+                    }
+                ];
+            } else {
+                // Default Technical / General Engineering questions
+                return [
+                    {
+                        question: "A Lei de Ohm estabelece a relação entre quais grandezas elétricas fundamentais?",
+                        options: ["Tensão, Corrente e Resistência", "Potência, Trabalho e Tempo", "Frequência, Indutância e Capacitância", "Fluxo Magnético e Campo Elétrico"],
+                        correct: 0
+                    },
+                    {
+                        question: "O que representa o conceito de Manutenção Preventiva em processos industriais?",
+                        options: ["Consertar o equipamento imediatamente após a quebra total", "Intervenções planejadas antes da ocorrência de falhas com base em tempo ou uso", "Substituição completa do maquinário a cada ano", "Monitoramento em tempo real via sensores de vibração"],
+                        correct: 1
+                    },
+                    {
+                        question: "Na gestão de projetos, o que define o Caminho Crítico (CPM)?",
+                        options: ["A sequência de tarefas de menor custo orçamentário", "A sequência de atividades com folga zero que determina a duração total do projeto", "O conjunto de riscos com maior severidade", "A etapa final de testes de qualidade"],
+                        correct: 1
+                    },
+                    {
+                        question: "Qual instrumento é utilizado para medições de alta precisão de dimensões externas e profundidade?",
+                        options: ["Multímetro", "Paquímetro", "Manômetro", "Anemômetro"],
+                        correct: 1
+                    }
+                ];
+            }
+        }
+
+        function renderCustomTopicRowsDefault() {
+            const container = document.getElementById('customTopicsContainer');
+            container.innerHTML = '';
+            // Add 2 default topic fields
+            addCustomTopicRow();
+            addCustomTopicRow();
+        }
+
+        function addCustomTopicRow() {
+            const container = document.getElementById('customTopicsContainer');
+            const rowId = 'topic_' + Date.now() + Math.random().toString(36).substring(2, 5);
+
+            const div = document.createElement('div');
+            div.id = rowId;
+            div.className = "flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 gap-3";
+            div.innerHTML = `
+                <div class="flex-grow w-full sm:w-auto">
+                    <input type="text" placeholder="Nome do tema trabalhado em sala de aula" class="topic-name-input w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-navy-500 outline-none bg-white">
+                </div>
+                <div class="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-start">
+                    <span class="text-xs font-semibold text-slate-500">Domínio:</span>
+                    <label class="flex items-center space-x-1 text-xs cursor-pointer">
+                        <input type="radio" name="level_${rowId}" value="Alto" checked class="text-emerald-600 focus:ring-emerald-500">
+                        <span class="text-emerald-800 font-medium">Alto</span>
+                    </label>
+                    <label class="flex items-center space-x-1 text-xs cursor-pointer">
+                        <input type="radio" name="level_${rowId}" value="Médio" class="text-amber-600 focus:ring-amber-500">
+                        <span class="text-amber-800 font-medium">Médio</span>
+                    </label>
+                    <label class="flex items-center space-x-1 text-xs cursor-pointer">
+                        <input type="radio" name="level_${rowId}" value="Baixo" class="text-slate-600 focus:ring-slate-500">
+                        <span class="text-slate-800 font-medium">Baixo</span>
+                    </label>
+                    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="text-slate-400 hover:text-slate-600 p-1">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(div);
+            lucide.createIcons();
+        }
+
+        function submitAlunoGroupForm() {
+            const size = parseInt(document.getElementById('alunoGroupSize').value, 10);
+            const memberInputs = document.querySelectorAll('.group-member-input');
+            let memberNames = [];
+
+            for (let i = 0; i < size; i++) {
+                const val = memberInputs[i] ? memberInputs[i].value.trim().toUpperCase() : '';
+                if (!val) {
+                    showToast(`Por favor preencha o nome do Integrante ${i + 1}.`, "error");
+                    return;
+                }
+                memberNames.push(val);
+            }
+
+            // Check Quiz Answers
+            const turmaObj = state.turmas.find(t => t.id === state.currentUser.turmaId);
+            const questions = getQuestionsForCourse(turmaObj.area, turmaObj.year);
+            let correctCount = 0;
+
+            for (let i = 0; i < questions.length; i++) {
+                const selected = document.querySelector(`input[name="quiz_q${i}"]:checked`);
+                if (!selected) {
+                    showToast(`Por favor responda à Questão Q${i + 1} do diagnóstico.`, "error");
+                    return;
+                }
+                if (parseInt(selected.value, 10) === questions[i].correct) {
+                    correctCount++;
+                }
+            }
+
+            const scorePercentage = Math.round((correctCount / questions.length) * 100);
+
+            // Custom Topics
+            const topicRows = document.querySelectorAll('#customTopicsContainer > div');
+            let customTopics = [];
+
+            topicRows.forEach(row => {
+                const nameInput = row.querySelector('.topic-name-input');
+                const selectedLevel = row.querySelector(`input[type="radio"]:checked`);
+
+                if (nameInput && nameInput.value.trim() !== '') {
+                    customTopics.push({
+                        topic: nameInput.value.trim(),
+                        level: selectedLevel ? selectedLevel.value : 'Médio'
+                    });
+                }
+            });
+
+            if (customTopics.length === 0) {
+                showToast("Por favor cadastre ao menos um tema trabalhado em sala de aula.", "error");
+                return;
+            }
+
+            // Create Group Object
+            const newGrupo = {
+                id: 'grp_' + Date.now(),
+                turmaId: state.currentUser.turmaId,
+                leaderId: state.currentUser.id,
+                groupSize: size,
+                memberNames,
+                customTopics,
+                scorePercentage,
+                submittedAt: new Date().toISOString()
+            };
+
+            // Remove previous submission if re-submitting
+            state.grupos = state.grupos.filter(g => !(g.turmaId === turmaObj.id && g.memberNames.includes(state.currentUser.name)));
+            state.grupos.push(newGrupo);
+            saveState();
+
+            showToast("Relatório do Grupo enviado ao Professor com sucesso!");
+            setupAlunoDashboard(turmaObj);
+        }
+    </script>
+</body>
+</html>
